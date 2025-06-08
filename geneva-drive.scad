@@ -23,6 +23,7 @@ EPS = 0.01;
 geneva_wheel_r = 25;        // .1
 geneva_wheel_slots = 5;     // 1
 geneva_crank_pin_r = 2.5;   // .1
+geneva_crank_min_base = true;
 geneva_clearance = 0.25;    // .05
 geneva_h = 5;               // .1
 // mutually exclusive with geneva_rounding, if set you need to set geneva_rounding to 0!
@@ -105,10 +106,17 @@ module geneva_crank(wheel_r, slots, crank_pin_r, h, base_h, clearance=0.25, cham
         union()
         {
             // base
-            hull()
+            if (geneva_crank_min_base)
             {
-                cyl(r=stop_disc_r, h=base_h, chamfer=chamfer_pos, rounding=rounding_pos, anchor=BOTTOM);
-                right(crank_r) cyl(r=crank_pin_r, h=base_h, chamfer=chamfer_pos, rounding=rounding_pos, anchor=BOTTOM);
+                hull()
+                {
+                    cyl(r=stop_disc_r, h=base_h, chamfer=chamfer_pos, rounding=rounding_pos, anchor=BOTTOM);
+                    right(crank_r) cyl(r=crank_pin_r, h=base_h, chamfer=chamfer_pos, rounding=rounding_pos, anchor=BOTTOM);
+                }
+            }
+            else
+            {
+                cyl(r=crank_r+crank_pin_r, h=base_h, chamfer=chamfer_pos, rounding=rounding_pos, anchor=BOTTOM);
             }
 
             up(base_h/2)
@@ -258,4 +266,4 @@ module mw_plate_1(){plate_1();}
 module mw_assembly_view(){assembly();}
 
 //assembly();
-plate_1();
+//plate_1();
