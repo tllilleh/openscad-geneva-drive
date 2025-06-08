@@ -107,23 +107,23 @@ module geneva_crank(wheel_r, slots, crank_pin_r, h, base_h, clearance=0.25, cham
             // base
             hull()
             {
-                cyl(r=stop_disc_r, h=base_h, chamfer1=chamfer_pos, rounding1=rounding_pos, anchor=BOTTOM);
-                right(crank_r) cyl(r=crank_pin_r, h=base_h, chamfer1=chamfer_pos, rounding1=rounding_pos, anchor=BOTTOM);
+                cyl(r=stop_disc_r, h=base_h, chamfer=chamfer_pos, rounding=rounding_pos, anchor=BOTTOM);
+                right(crank_r) cyl(r=crank_pin_r, h=base_h, chamfer=chamfer_pos, rounding=rounding_pos, anchor=BOTTOM);
             }
 
-            up(base_h)
+            up(base_h/2)
             {
                 // stop disk
                 difference()
                 {
-                    cyl(r=stop_disc_r, h=h, chamfer2=chamfer_pos, rounding2=rounding_pos, anchor=BOTTOM);
+                    cyl(r=stop_disc_r, h=h+base_h/2, chamfer2=chamfer_pos, rounding2=rounding_pos, anchor=BOTTOM);
 
                     right(clearance_arc_dist)
-                        cyl(r=clearance_arc, h=h+EPS, chamfer2=chamfer_neg, rounding2=rounding_neg, anchor=BOTTOM);
+                        cyl(r=clearance_arc, h=h+base_h/2+EPS, chamfer2=chamfer_neg, rounding2=rounding_neg, anchor=BOTTOM);
                 }
 
                 // drive pin
-                right(crank_r) cyl(r=crank_pin_r, h=h, chamfer2=chamfer_pos, rounding2=rounding_pos, anchor=BOTTOM);
+                right(crank_r) cyl(r=crank_pin_r, h=h+base_h/2, chamfer2=chamfer_pos, rounding2=rounding_pos, anchor=BOTTOM);
 
             }
         }
@@ -258,4 +258,4 @@ module mw_plate_1(){plate_1();}
 module mw_assembly_view(){assembly();}
 
 //assembly();
-//plate_1();
+plate_1();
