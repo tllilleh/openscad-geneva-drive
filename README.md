@@ -1,6 +1,8 @@
 This is a Geneva drive implementation in OpenSCAD.
 
-This library requires the BOSL2 library to be included.
+You can find the full library and documentation at: https://github.com/tllilleh/openscad-geneva-drive
+
+This library requires the [BOSL2 library](https://github.com/BelfrySCAD/BOSL2) to be included.
 
 References:
 - https://en.wikipedia.org/wiki/Geneva_drive

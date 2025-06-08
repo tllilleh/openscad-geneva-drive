@@ -2,7 +2,9 @@ include <BOSL2/std.scad>
 
 /* This is a Geneva drive implementation in OpenSCAD.
  *
- * This library requires the BOSL2 library to be included.
+ * You can find the full library and documentation at: https://github.com/tllilleh/openscad-geneva-drive
+
+ * This library requires the BOSL2 library (https://github.com/BelfrySCAD/BOSL2) to be included.
  *
  * References:
  * - https://en.wikipedia.org/wiki/Geneva_drive
@@ -23,7 +25,9 @@ geneva_wheel_slots = 5;     // 1
 geneva_crank_pin_r = 2.5;   // .1
 geneva_clearance = 0.25;    // .05
 geneva_h = 5;               // .1
+// mutually exclusive with geneva_rounding, if set you need to set geneva_rounding to 0!
 geneva_chamfer = 0.5;       // .1
+// mutually exclusive with geneva_chamfer, if set you need to set geneva_chamfer to 0!
 geneva_rounding = 0.0;      // .1
 
 /* [Base] */
