@@ -23,6 +23,8 @@ geneva_wheel_slots = 5;     // 1
 geneva_crank_pin_r = 2.5;   // .1
 geneva_clearance = 0.25;    // .05
 geneva_h = 5;               // .1
+geneva_chamfer = 0.5;       // .1
+geneva_rounding = 0.0;      // .1
 
 /* [Base] */
 shaft_r = 2.5;              // .1
@@ -33,8 +35,12 @@ base_spacer_h = 1;          // .1
 function geneva_center_distance(wheel_r, slots) = wheel_r / cos(180/slots);
 function geneva_crank_r(center_distance, wheel_r) = sqrt(pow(center_distance, 2) - pow(wheel_r, 2));
 
-module geneva_wheel(wheel_r, slots, crank_pin_r, h, clearance=0.25, anchor=CENTER, spin=0, orient=UP)
+module geneva_wheel(wheel_r, slots, crank_pin_r, h, clearance=0.25, chamfer=undef, rounding=undef, anchor=CENTER, spin=0, orient=UP)
 {
+    rounding_pos = (is_def(rounding) && rounding != 0) ? rounding : undef;
+    rounding_neg = (is_def(rounding) && rounding != 0) ? -rounding : undef;
+    chamfer_pos = (is_def(chamfer) && chamfer != 0) ? chamfer : undef;
+    chamfer_neg = (is_def(chamfer) && chamfer != 0) ? -chamfer : undef;
     slot_angle = 360/slots;
     crank_pin_d = crank_pin_r * 2;
     center_distance = geneva_center_distance(wheel_r, slots);
@@ -48,16 +54,15 @@ module geneva_wheel(wheel_r, slots, crank_pin_r, h, clearance=0.25, anchor=CENTE
         difference()
         {
             // wheel
-            cyl(r=wheel_r, h=h);
+            cyl(r=wheel_r, h=h, chamfer=chamfer_pos, rounding=rounding_pos);
 
             // stop arcs
             for (angle = [slot_angle:slot_angle:360])
             {
                 zrot(angle)
                     left(center_distance)
-                    cyl(r=stop_arc_r, h=h+EPS);
+                    cyl(r=stop_arc_r, h=h+EPS, chamfer=chamfer_neg, rounding=rounding_neg);
             }
-
 
             // slots
             for (angle = [slot_angle/2:slot_angle:360])
@@ -65,13 +70,9 @@ module geneva_wheel(wheel_r, slots, crank_pin_r, h, clearance=0.25, anchor=CENTE
                 zrot(angle)
                     left(wheel_r)
                     {
-                        hull()
-                        {
-                            cyl(r=slot_width/2, h=h+EPS);
-
-                            right(slot_center_length)
-                                cyl(r=slot_width/2, h=h+EPS);
-                        }
+                        cyl(r=slot_width/2, h=h+EPS, chamfer=chamfer_neg, rounding=rounding_neg);
+                        zrot(90) xrot(90) linear_extrude(height=slot_center_length) projection() xrot(90) cyl(r=slot_width/2, h=h+EPS, chamfer=chamfer_neg, rounding=rounding_neg);
+                        right(slot_center_length) cyl(r=slot_width/2, h=h+EPS, chamfer=chamfer_neg, rounding=rounding_neg);
                     }
             }
         }
@@ -80,8 +81,12 @@ module geneva_wheel(wheel_r, slots, crank_pin_r, h, clearance=0.25, anchor=CENTE
     }
 }
 
-module geneva_crank(wheel_r, slots, crank_pin_r, h, base_h, clearance=0.25, anchor=CENTER, spin=0, orient=UP)
+module geneva_crank(wheel_r, slots, crank_pin_r, h, base_h, clearance=0.25, chamfer=undef, rounding=undef, anchor=CENTER, spin=0, orient=UP)
 {
+    rounding_pos = (is_def(rounding) && rounding != 0) ? rounding : undef;
+    rounding_neg = (is_def(rounding) && rounding != 0) ? -rounding : undef;
+    chamfer_pos = (is_def(chamfer) && chamfer != 0) ? chamfer : undef;
+    chamfer_neg = (is_def(chamfer) && chamfer != 0) ? -chamfer : undef;
     crank_pin_d = crank_pin_r * 2;
     center_distance = geneva_center_distance(wheel_r, slots);
     crank_r = geneva_crank_r(center_distance, wheel_r);
@@ -98,9 +103,8 @@ module geneva_crank(wheel_r, slots, crank_pin_r, h, base_h, clearance=0.25, anch
             // base
             hull()
             {
-                cyl(r=stop_disc_r, h=base_h, anchor=BOTTOM);
-                right(crank_r) cyl(r=crank_pin_r, h=base_h, anchor=BOTTOM);
-
+                cyl(r=stop_disc_r, h=base_h, chamfer1=chamfer_pos, rounding1=rounding_pos, anchor=BOTTOM);
+                right(crank_r) cyl(r=crank_pin_r, h=base_h, chamfer1=chamfer_pos, rounding1=rounding_pos, anchor=BOTTOM);
             }
 
             up(base_h)
@@ -108,14 +112,14 @@ module geneva_crank(wheel_r, slots, crank_pin_r, h, base_h, clearance=0.25, anch
                 // stop disk
                 difference()
                 {
-                    cyl(r=stop_disc_r, h=h, anchor=BOTTOM);
+                    cyl(r=stop_disc_r, h=h, chamfer2=chamfer_pos, rounding2=rounding_pos, anchor=BOTTOM);
 
                     right(clearance_arc_dist)
-                        cyl(r=clearance_arc, h=h+EPS, anchor=BOTTOM);
+                        cyl(r=clearance_arc, h=h+EPS, chamfer2=chamfer_neg, rounding2=rounding_neg, anchor=BOTTOM);
                 }
 
                 // drive pin
-                right(crank_r) cyl(r=crank_pin_r, h=h, anchor=BOTTOM);
+                right(crank_r) cyl(r=crank_pin_r, h=h, chamfer2=chamfer_pos, rounding2=rounding_pos, anchor=BOTTOM);
 
             }
         }
@@ -126,6 +130,9 @@ module geneva_crank(wheel_r, slots, crank_pin_r, h, base_h, clearance=0.25, anch
 
 module my_geneva_wheel(anchor=CENTER, spin=0, orient=UP)
 {
+    rounding_neg = (is_def(geneva_rounding) && geneva_rounding != 0) ? -geneva_rounding : undef;
+    chamfer_neg = (is_def(geneva_chamfer) && geneva_chamfer != 0) ? -geneva_chamfer : undef;
+
     attachable(anchor, spin, orient, r=geneva_wheel_r, l=geneva_h, axis=TOP)
     {
         difference()
@@ -135,10 +142,12 @@ module my_geneva_wheel(anchor=CENTER, spin=0, orient=UP)
                     slots = geneva_wheel_slots,
                     crank_pin_r = geneva_crank_pin_r,
                     h = geneva_h,
-                    clearance = geneva_clearance
+                    clearance = geneva_clearance,
+                    chamfer = geneva_chamfer,
+                    rounding = geneva_rounding
                     );
 
-            cyl(r=shaft_r+TOL, h=geneva_h+EPS);
+            cyl(r=shaft_r+TOL, h=geneva_h+EPS, chamfer=chamfer_neg, rounding=rounding_neg);
         }
 
         children();
@@ -147,6 +156,8 @@ module my_geneva_wheel(anchor=CENTER, spin=0, orient=UP)
 
 module my_geneva_crank(anchor=CENTER, spin=0, orient=UP)
 {
+    rounding_neg = (is_def(geneva_rounding) && geneva_rounding != 0) ? -geneva_rounding : undef;
+    chamfer_neg = (is_def(geneva_chamfer) && geneva_chamfer != 0) ? -geneva_chamfer : undef;
     crank_r = geneva_crank_r(geneva_center_distance(geneva_wheel_r, geneva_wheel_slots), geneva_wheel_r);
 
     attachable(anchor, spin, orient, r=crank_r + geneva_crank_pin_r, l=2*geneva_h, axis=TOP)
@@ -159,10 +170,12 @@ module my_geneva_crank(anchor=CENTER, spin=0, orient=UP)
                     crank_pin_r = geneva_crank_pin_r,
                     h = geneva_h,
                     base_h = geneva_h,
-                    clearance = geneva_clearance
+                    clearance = geneva_clearance,
+                    chamfer = geneva_chamfer,
+                    rounding = geneva_rounding
                     );
 
-            cyl(r=shaft_r+TOL, h=2*geneva_h+EPS);
+            cyl(r=shaft_r+TOL, h=2*geneva_h+EPS, chamfer=chamfer_neg, rounding=rounding_neg);
         }
 
         children();
